@@ -4,6 +4,7 @@ Currently only a couple of commands from [https://wiki.factorio.com/Console](htt
 In time I hope to have (almost) all of the commands in that list implemented.
 
 Current commands:
+
 | Command | Description |
 | :--- | :--- |
 | `become_god` | This command removes the players character, making the player 'god'. Requires you to be admin if adminsOnly is true |
