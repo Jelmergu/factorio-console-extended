@@ -1,0 +1,39 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.0.2
+Date: 17. 02. 2018
+  General:
+    - Added a check to teleport to attempt to put the player in a position that the player can still move in
+   New Commands:
+    - become_god: This command removes the players character, making the player 'god'
+    - become_mortal:This command puts the player in a character, making the player 'mortal'.
+    - give_stack: This command gives the player a stack of the specified item.
+    - kill_enemies: This command removes all generated enemies from the map
+    - save: This command instructs the server to save the current map under the given name. If no name is given it saves the map overwrites the current save
+    - set_crafting_speed: This commands sets the crafting speed of the specified player, If no player is given it has effect on the player using the command
+    - set_mining_speed: This commands sets the mining speed of the specified player, If no player is given it has effect on the player using the command
+    - set_running_speed: This commands sets the running speed of the specified player, If no player is given it has effect on the player using the command
+    - toggle_expansion: This command toggles biter expansion
+---------------------------------------------------------------------------------------------------
+Version: 0.0.1
+Date: 03. 01. 2018
+  Settings:
+    - Require admin: when checked most commands require admin commands. Defaults to off
+  New Commands:
+    - cli_ext: This command shows all commands added by this mod
+    - destroy_selected: This command destroys the entity that is currently selected(also player characters, leaving them in god mode)
+    - finish_current_tech: This command finishes the current research. Does not use science packs, nor does it return already use packs
+    - freeze: This command freezes the time of day of the game
+    - lock_all_tech: This command unresearches the entire tech tree
+    - lock_tech: This command unresearches the specified technology and all that depend on it. Needs the name of the research as known to the game
+    - position, This command tells you your coordinates
+    - position_to_global_chat: This command tells everyone your coordinates
+    - position_to_player: This command tells a specific player your coordinates. Needs the name of the player as argument(case sensitive)
+    - speed: This command changes the speed of the game. Needs the percentage of the wanted speed (100 is normal speed, 50 is half speed, 200 is double). Has a range from 1 to 10.000
+    - teleport_to: This command teleports you to the specified coordinates. Needs two coordinates x coordinate and y coordinate
+    - teleport_to_player: This command teleports you to the specified player. Needs the name of the player to teleport to. Note: it is possible to teleport to a location where that makes you unable to move!
+    - toggle_cheat: This command toggles cheat mode
+    - toggle_night: This command turns the night on and off
+    - toggle_peace: This command toggles peaceful mode
+    - unlock_all_tech: This command researches everything except for infinite techs
+    - unlock_tech: This command researches the specified technology and all that it depends on. Needs the name of the research as known to the game
+    - zoom: This command changes the zoom level. Needs the percentage of the wanted zoom (100 is normal speed, 50 is half speed, 200 is double). Has a range from 4 to 1.000

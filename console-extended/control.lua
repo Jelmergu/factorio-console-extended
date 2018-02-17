@@ -10,10 +10,6 @@ function in_table(table, item)
 end
 
 
---script.on_event(defines.events.on_console_chat, function (event)
---    game.print(serpent.line(Commands.help))
---end)
-
-for _, v in pairs(C.util.getCommands()) do
+for _, v in pairs(C.util:getCommands()) do
     commands.add_command(v, C.util.help(v), C.util.command)
 end
