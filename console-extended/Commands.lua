@@ -317,6 +317,15 @@ end
 
 -- Util functions
 
+-- Check if allowed to use a command
+function Commands.util.allowedToUse()
+    if (settings.startup["cli-ext-adminOnly"] == false or Commands.admin == true) then
+        return true
+    end
+    game.print(Commands.player.name.." tried to use "..Commands.calledCommand.." but was not allowed", Commands.player.color)
+    return false
+end
+
 -- The entry point of every command.
 function Commands.util.command(event)
     Commands.player = game.players[event.player_index]
@@ -332,46 +341,28 @@ function Commands.util.command(event)
     if in_table(Commands, Commands.calledCommand) then Commands[Commands.calledCommand](Commands) end
 end
 
-function Commands.util.allowedToUse()
-    if (settings.startup["cli-ext-adminOnly"] == false or Commands.admin == true) then
+-- Check if the parameter count is the same or more as count. If not display a message
+function Commands.util.correctParameterCount(count, message)
+    if message == nil then
+        message = ""
+    end
+
+    if Commands.parameterCount >= count then
         return true
     end
-    game.print(Commands.player.name.." tried to use "..Commands.calledCommand.." but was not allowed", Commands.player.color)
+    local argumentsText = count == 1 and " argument" or " arguments"
+    Commands.player.print(Commands.calledCommand.." requires "..count..argumentsText..message)
     return false
 end
 
--- Find a player by name and return its index or nil if the player was not found
-function Commands.util.getPlayerIndexFromName(name)
-    for k,v in pairs(game.players) do
-        if v.name == name then return k end
+-- Convert a string to a table, splitting the string at the delimiter
+function Commands.util.explode(s, delimiter)
+    if type(s) ~= "string" then return {} end
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
     end
-    Commands.player.print("Player '"..name.."' not found. Make sure that the name is typed correctly(case sensitive)")
-    return nil
-end
-
--- Join the elements of a table with the glue
-function Commands.util.join(t, glue)
-    local string = ""
-    for _, v in pairs(t) do
-        if string ~= "" then
-            string = string..glue..v
-        else
-            string = string..v
-        end
-    end
-    return string
-end
-
--- Change true to false and false to true, and display a message to the player if specified
-function Commands.util.switchBool(value, message)
-    if value == true then
-        value = false
-        if message~=nil then Commands.player.print(message.." off") end
-    else
-        value = true
-        if message~=nil then Commands.player.print(message.." on") end
-    end
-    return value
+    return result;
 end
 
 -- Get all of the commands available
@@ -385,31 +376,29 @@ function Commands.util.getCommands()
     return returnTable
 end
 
--- Convert a string to a table, splitting the string at the delimiter
-function Commands.util.explode(s, delimiter)
-    if type(s) ~= "string" then return {} end
-    result = {};
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
-        table.insert(result, match);
+-- Find a player by name and return its index or nil if the player was not found
+function Commands.util.getPlayerIndexFromName(name)
+    for k,v in pairs(game.players) do
+        if v.name == name then return k end
     end
-    return result;
+    Commands.player.print("Player '"..name.."' not found. Make sure that the name is typed correctly(case sensitive)")
+    return nil
 end
 
 -- Get the help message of a command
 Commands.util.help = require "help"
 
--- Check if the parameter count is the same or more as count. If not display a message
-function Commands.util.correctParameterCount(count, message)
-    if message == nil then
-        message = ""
+-- Join the elements of a table with the glue
+function Commands.util.join(t, glue)
+    local string = ""
+    for _, v in pairs(t) do
+        if string ~= "" then
+            string = string..glue..v
+        else
+            string = string..v
+        end
     end
-
-    if Commands.parameterCount >= count then
-        return true
-    end
-    local argumentsText = count == 1 and " argument" or " arguments"
-    Commands.player.print(Commands.calledCommand.." requires "..count..argumentsText..message)
-    return false
+    return string
 end
 
 -- Lock the techs that depend on the given tech
@@ -426,14 +415,7 @@ function Commands.util.lockDependingTechs(tech)
     Commands.player.force.set_saved_technology_progress(tech, 0)
 end
 
--- Unlock the techs that the given tech depends on
-function Commands.util.unlockDependingTechs(tech)
-    for _, t in pairs(tech.prerequisites) do
-        Commands.util.unlockDependingTechs(t)
-    end
-    tech.researched=true
-end
-
+-- Check the teleport target location for collisions
 function Commands.util.makeValidTeleportLocation(position)
     if Commands.player.surface.can_place_entity({name="player", position=position}) then
         return position
@@ -452,20 +434,25 @@ function Commands.util.makeValidTeleportLocation(position)
     end
 end
 
-function Commands.resetQol(self)
-    for _, tech in pairs(self.player.force.technologies) do
-        local startPosition = tech.name:find("qol")
-        if startPosition == 1 and tech.researched == true then
-            if not tech.name:find("toolbelt") then
-                tech.researched=false
-                self.player.force.set_saved_technology_progress(tech, 0)
-                tech.researched=true
-            end
-        end
+-- Change true to false and false to true, and display a message to the player if specified
+function Commands.util.switchBool(value, message)
+    if value == true then
+        value = false
+        if message~=nil then Commands.player.print(message.." off") end
+    else
+        value = true
+        if message~=nil then Commands.player.print(message.." on") end
     end
-    self.pickup_dropped_items(self)
+    return value
 end
 
+-- Unlock the techs that the given tech depends on
+function Commands.util.unlockDependingTechs(tech)
+    for _, t in pairs(tech.prerequisites) do
+        Commands.util.unlockDependingTechs(t)
+    end
+    tech.researched=true
+end
 
 return Commands
 
