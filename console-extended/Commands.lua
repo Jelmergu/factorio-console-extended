@@ -4,8 +4,23 @@ Commands.util.dontUse = {}
 
 function Commands.become_god(self)
     if self.util.allowedToUse() == false then return end
+    if game.player.character == nil then return end
+    local inventories = {
+        defines.inventory.player_quickbar, 
+        defines.inventory.player_main, 
+        defines.inventory.player_guns, 
+        defines.inventory.player_ammo, 
+        defines.inventory.player_armor,
+        defines.inventory.player_tools,
+        defines.inventory.player_vehicle,
+        defines.inventory.player_trash
+    }
     local playerCharacter = game.player.character
+
     game.player.character = nil
+    for _, inv in pairs(inventories) do
+        self.util.transferInventory(playerCharacter, game.player, inv)
+    end
     playerCharacter.destroy()
 end
 
@@ -453,6 +468,15 @@ function Commands.util.unlockDependingTechs(tech)
     end
     tech.researched=true
 end
+
+function Commands.util.transferInventory(origin, destination, inventory)
+    if origin.get_inventory(inventory) == nil then return end
+    for i,v in pairs(origin.get_inventory(inventory).get_contents()) do
+        destination.insert({name=i, count=v})
+        origin.remove_item({name=i, count=v})
+    end
+end
+
 
 return Commands
 
