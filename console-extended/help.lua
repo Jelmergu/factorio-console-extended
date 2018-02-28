@@ -9,6 +9,9 @@ local helpTexts = {
     kill_enemies = "This command removes all generated enemies from the map. Requires you to be admin if adminsOnly is true",
     lock_all_tech = "This command unresearches the entire tech tree. Science packs used on the tech tree are not returned. Requires you to be admin if adminsOnly is true",
     lock_tech = "This command unresearches the specified technology and all that depend on it. Needs the name of the research as known to the game. It does not return the science packs used for the tech(s). Requires you to be admin if adminsOnly is true",
+    map_cancel_reveal = "This command stops the revealing of the map that was called by the console",
+    map_rechart = "This command recharts all visible parts of the map",
+    map_reveal = "This command reveals the map for the specified distance around the player in a square. Needs the radius",
     pickup_dropped_items = "This command transfers all items from the ground to your inventory. By default it picks up everything in a 32 square radius, but this can be specified by passing a number as argument. Requires you to be admin if adminsOnly is true",
     position = "This command tells you your coordinates",
     position_to_global_chat = "This command tells everyone your coordinates",
@@ -19,6 +22,7 @@ local helpTexts = {
     set_running_speed = "This commands sets the running speed of the specified player, If no player is given it has effect on the player using the command. Accepts 1 or 2 arguments. Modifier(required), player name(optional). Requires you to be admin if adminsOnly is true",
     speed = "This command changes the speed of the game. Needs the percentage of the wanted speed (100 is normal speed, 50 is half speed, 200 is double). Has a range from 1 to 10.000. Requires you to be admin if adminsOnly is true",
     teleport_to = "This command teleports you to the specified coordinates. Needs two coordinates x coordinate and y coordinate. Requires you to be admin if adminsOnly is true",
+    teleport_to_me = "This command teleports the specified player to you. Needs the name of the player to teleport. Requires you to be admin if adminsOnly is true",
     teleport_to_player = "This command teleports you to the right of the specified player. Needs the name of the player to teleport to. Note: it is possible to teleport to a location where that makes you unable to move(cliffs and water)! "..
         "If this happens use /position to get your current coordinate and subtrackt 1 from the x coordinate. Requires you to be admin if adminsOnly is true",
     toggle_cheat = "This command toggles cheat mode. Requires you to be admin if adminsOnly is true",

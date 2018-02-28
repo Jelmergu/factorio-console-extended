@@ -1,9 +1,13 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.0.3
+Version: 0.16.3
 Date: 27. 02. 2018
   Fixes:
     - Fixed that /become_god would destroy all items in the players inventory
-
+  New Commands:
+    - map_cancel_reveal: This command stops the revealing of the map that was called by the console
+    - map_rechart: This command recharts all visible parts of the map
+    - map_reveal: This command reveals the map for the specified distance around the player in a square. Needs the radius
+    - teleport_to_me: This command teleports the specified player to you. Needs the name of the player to teleport
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 17. 02. 2018

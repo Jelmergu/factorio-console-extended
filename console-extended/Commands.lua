@@ -6,10 +6,10 @@ function Commands.become_god(self)
     if self.util.allowedToUse() == false then return end
     if game.player.character == nil then return end
     local inventories = {
-        defines.inventory.player_quickbar, 
-        defines.inventory.player_main, 
-        defines.inventory.player_guns, 
-        defines.inventory.player_ammo, 
+        defines.inventory.player_quickbar,
+        defines.inventory.player_main,
+        defines.inventory.player_guns,
+        defines.inventory.player_ammo,
         defines.inventory.player_armor,
         defines.inventory.player_tools,
         defines.inventory.player_vehicle,
@@ -35,7 +35,7 @@ end
 function Commands.cli_ext(self)
     local availableCommands = ""
     for _, v in pairs(self.util.getCommands()) do
-        availableCommands = availableCommands.." /"..v
+        availableCommands = availableCommands .. " /" .. v
     end
     self.player.print(availableCommands);
 end
@@ -61,16 +61,16 @@ function Commands.give_stack(self)
     if not self.util.correctParameterCount(1, parameterCountMessage) then
         return
     end
-    local name=self.util.join(self.parameters, "-")
+    local name = self.util.join(self.parameters, "-")
     if game.item_prototypes[name] ~= nil then
         local stack = game.item_prototypes[name].stack_size
-        self.player.insert({name=name, count=stack})
+        self.player.insert({ name = name, count = stack })
     end
 end
 
 function Commands.kill_enemies(self)
     if self.util.allowedToUse() == false then return end
-    for key, entity in pairs(self.player.surface.find_entities_filtered({force="enemy"})) do
+    for key, entity in pairs(self.player.surface.find_entities_filtered({ force = "enemy" })) do
         entity.destroy()
     end
 end
@@ -78,7 +78,7 @@ end
 function Commands.lock_all_tech(self)
     if self.util.allowedToUse() == false then return end
     for _, tech in pairs(self.player.force.technologies) do
-        tech.researched=false
+        tech.researched = false
         self.player.force.set_saved_technology_progress(tech, 0)
     end
 end
@@ -95,60 +95,84 @@ function Commands.lock_tech(self)
     if self.player.force.current_research ~= nil then
         if self.player.force.current_research.name == techName then self.player.force.current_research = nil end
     end
-    self.player.print("Searching technology with the name: '"..techName.."' ")
+    self.player.print("Searching technology with the name: '" .. techName .. "' ")
 
     for _, tech in pairs(self.player.force.technologies) do
         if tech.name == techName then
-            self.player.print("Technology with the name: '"..techName.."' found")
+            self.player.print("Technology with the name: '" .. techName .. "' found")
             selectedTech = tech
         elseif tech.prerequisites[techName] ~= nil then
             self.util.lockDependingTechs(tech)
         end
     end
     if selectedTech == nil then
-        self.player.print("Technology with the name: '"..techName.."' was not found")
+        self.player.print("Technology with the name: '" .. techName .. "' was not found")
         return
     end
-    selectedTech.researched=false
+    selectedTech.researched = false
     self.player.force.set_saved_technology_progress(selectedTech, 0)
+end
+
+function Commands.map_cancel_reveal(self)
+    self.player.force.cancel_charting(self.player.surface)
+end
+
+function Commands.map_rechart(self)
+    if self.util.allowedToUse() == false then return end
+    self.player.force.rechart()
+end
+
+function Commands.map_reveal(self)
+    if self.util.allowedToUse() == false then return end
+    local parameterCountMessage = ": distance. Example usage '/map_reveal 32'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
+        return
+    end
+    local left_top, right_bottom = self.player.position, self.player.position
+
+    left_top.x = left_top.x - self.parameters[1]
+    left_top.y = left_top.y - self.parameters[1]
+
+    right_bottom.x = right_bottom.x + self.parameters[1]
+    right_bottom.y = right_bottom.y + self.parameters[1]
+
+    self.player.force.chart(self.player.surface, {left_top, right_bottom})
 end
 
 function Commands.pickup_dropped_items(self)
     if self.util.allowedToUse() == false then return end
-    local radius=32
+    local radius = 32
     if self.parameterCount > 0 then
         radius = self.parameters[1]
     end
 
-    local groundEntities = self.player.surface.find_entities_filtered(
-        {
-            area={
-                {self.player.position.x-radius, self.player.position.y-radius},
-                {self.player.position.x+radius, self.player.position.y+radius}
-            },
-            name="item-on-ground"
-        }
-    )
+    local groundEntities = self.player.surface.find_entities_filtered({
+        area = {
+            { self.player.position.x - radius, self.player.position.y - radius },
+            { self.player.position.x + radius, self.player.position.y + radius }
+        },
+        name = "item-on-ground"
+    })
     for _, entity in pairs(groundEntities) do
         entity.to_be_looted = true
-        entity.teleport({self.player.position.x, self.player.position.y})
+        entity.teleport({ self.player.position.x, self.player.position.y })
     end
 end
 
 function Commands.position(self)
     local color = self.player.color
     color.a = 0.5
-    self.player.print(self.player.name..": ("..self.player.position.x .. ", " .. self.player.position.y..")", color)
+    self.player.print(self.player.name .. ": (" .. self.player.position.x .. ", " .. self.player.position.y .. ")", color)
 end
 
 function Commands.position_to_global_chat(self)
     local color = self.player.color
     color.a = 0.5
-    game.print(self.player.name..": ("..game.player.position.x .. ", " .. game.player.position.y..")", color)
+    game.print(self.player.name .. ": (" .. game.player.position.x .. ", " .. game.player.position.y .. ")", color)
 end
 
 function Commands.position_to_player(self)
-    local parameterCountMessage = ": playerName, Example usage: /position_to_player "..self.player.name
+    local parameterCountMessage = ": playerName, Example usage: /position_to_player " .. self.player.name
     if not self.util.correctParameterCount(1, parameterCountMessage) then
         return
     end
@@ -162,13 +186,13 @@ function Commands.position_to_player(self)
 
     local color = self.player.color
     color.a = 0.5
-    destinationPlayer.print(self.player.name..": ("..game.player.position.x .. ", " .. game.player.position.y..")", color)
+    destinationPlayer.print(self.player.name .. ": (" .. game.player.position.x .. ", " .. game.player.position.y .. ")", color)
 end
 
 function Commands.save(self)
     if self.parameterCount > 0 then
         local savename = self.util.join(self.parameters, " ")
-        game.print("saving as: "..savename)
+        game.print("saving as: " .. savename)
         game.server_save(savename)
     else
         game.print("saving")
@@ -178,52 +202,50 @@ end
 
 function Commands.set_crafting_speed(self)
     if self.util.allowedToUse() == false then return end
-    local player = self.player
-    if self.parameterCount > 1 then
-        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-        if destinationPlayer == nil then
-            return
-        else
-            player = game.players[destinationPlayer]
-        end
-    elseif not self.util.correctParameterCount(1, ": modifier, Example usage: /set_crafting_speed 5") then
+    local parameterCountMessage = ": speed. Example usage '/set_crafting_speed 2'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
         return
     end
+    local player = self.player
+    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
+    if destinationPlayer == nil then
+        return
+    else
+        player = game.players[destinationPlayer]
+    end
     player.character_crafting_speed_modifier = self.parameters[1]
-
 end
 
 function Commands.set_mining_speed(self)
     if self.util.allowedToUse() == false then return end
-    local player = self.player
-    if self.parameterCount > 1 then
-        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-        if destinationPlayer == nil then
-            return
-        else
-            player = game.players[destinationPlayer]
-        end
-    elseif not self.util.correctParameterCount(1, ": modifier, Example usage: /set_mining_speed 5") then
+    local parameterCountMessage = ": speed. Example usage '/set_mining_speed 2'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
         return
     end
+    local player = self.player
 
+    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
+    if destinationPlayer == nil then
+        return
+    else
+        player = game.players[destinationPlayer]
+    end
     player.character_mining_speed_modifier = self.parameters[1]
 end
 
 function Commands.set_running_speed(self)
     if self.util.allowedToUse() == false then return end
-    local player = self.player
-    if self.parameterCount > 1 then
-        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-        if destinationPlayer == nil then
-            return
-        else
-            player = game.players[destinationPlayer]
-        end
-    elseif not self.util.correctParameterCount(1, ": modifier, Example usage: /set_running_speed 5") then
+    local parameterCountMessage = ": speed. Example usage '/set_running_speed 2'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
         return
     end
-
+    local player = self.player
+    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
+    if destinationPlayer == nil then
+        return
+    else
+        player = game.players[destinationPlayer]
+    end
     player.character_running_speed_modifier = self.parameters[1]
 end
 
@@ -235,27 +257,31 @@ function Commands.speed(self)
     local speed = tonumber(self.parameters[1])
     if speed < 1 then
         self.player.print("Game can not run slower than 1% speed")
-        speed= 1
+        speed = 1
     elseif speed > 10000 then
         self.player.print("Game should not go faster then 10.000% speed. It can severly harm the performance of the game after that")
         speed = 10000
     end
-    speed = speed/100
-    game.speed=speed
+    speed = speed / 100
+    game.speed = speed
 end
 
 function Commands.teleport_to(self)
     if self.util.allowedToUse() == false then return end
     local parameterCountMessage = ": x and y. Example usage '/teleport_to 0 0'"
-    if not self.util.correctParameterCount(1, parameterCountMessage) then
+    if not self.util.correctParameterCount(2, parameterCountMessage) then
         return
     end
     local x, y = tonumber(self.parameters[1]), tonumber(self.parameters[2])
-    self.player.teleport(self.util.makeValidTeleportLocation({x=x,y=y}))
+    self.player.teleport(self.util.makeValidTeleportLocation({ x = x, y = y }))
 end
 
 function Commands.teleport_to_player(self)
     if self.util.allowedToUse() == false then return end
+    local parameterCountMessage = ": player_name. Example usage '/teleport_to_player "..self.player.name.."'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
+        return
+    end
     local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[1])
     if destinationPlayer == nil then
         return
@@ -264,6 +290,22 @@ function Commands.teleport_to_player(self)
     end
     local destinationPosition = destinationPlayer.position
     self.player.teleport(self.util.makeValidTeleportLocation(destinationPosition))
+end
+
+function Commands.teleport_to_me(self)
+    if self.util.allowedToUse() == false then return end
+    local parameterCountMessage = ": player_name. Example usage '/teleport_to_player "..self.player.name.."'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
+        return
+    end
+    local sourcePlayer = self.util.getPlayerIndexFromName(self.parameters[1])
+    if sourcePlayer == nil then
+        return
+    else
+        sourcePlayer = game.players[sourcePlayer]
+    end
+    local destinationPosition = self.player.position
+    sourcePlayer.teleport(self.util.makeValidTeleportLocation(destinationPosition))
 end
 
 function Commands.toggle_cheat(self)
@@ -299,15 +341,15 @@ function Commands.unlock_tech(self)
     end
 
     local techName = self.util.join(self.parameters, "-")
-    self.player.print("Searching technology with the name: '"..techName.."' ")
+    self.player.print("Searching technology with the name: '" .. techName .. "' ")
     for _, tech in pairs(self.player.force.technologies) do
         if tech.name == techName then
-            self.player.print("Technology with the name: '"..techName.."' found")
+            self.player.print("Technology with the name: '" .. techName .. "' found")
             selectedTech = tech
         end
     end
     if selectedTech == nil then
-        self.player.print("Technology with the name: '"..techName.."' was not found")
+        self.player.print("Technology with the name: '" .. techName .. "' was not found")
         return
     end
     self.util.unlockDependingTechs(selectedTech)
@@ -327,7 +369,7 @@ function Commands.zoom(self)
     end
     zoom = zoom / 100
 
-    self.player.zoom=zoom
+    self.player.zoom = zoom
 end
 
 -- Util functions
@@ -337,7 +379,7 @@ function Commands.util.allowedToUse()
     if (settings.startup["cli-ext-adminOnly"] == false or Commands.admin == true) then
         return true
     end
-    game.print(Commands.player.name.." tried to use "..Commands.calledCommand.." but was not allowed", Commands.player.color)
+    game.print(Commands.player.name .. " tried to use " .. Commands.calledCommand .. " but was not allowed", Commands.player.color)
     return false
 end
 
@@ -366,7 +408,7 @@ function Commands.util.correctParameterCount(count, message)
         return true
     end
     local argumentsText = count == 1 and " argument" or " arguments"
-    Commands.player.print(Commands.calledCommand.." requires "..count..argumentsText..message)
+    Commands.player.print(Commands.calledCommand .. " requires " .. count .. argumentsText .. message)
     return false
 end
 
@@ -374,7 +416,7 @@ end
 function Commands.util.explode(s, delimiter)
     if type(s) ~= "string" then return {} end
     result = {};
-    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+    for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
         table.insert(result, match);
     end
     return result;
@@ -393,10 +435,10 @@ end
 
 -- Find a player by name and return its index or nil if the player was not found
 function Commands.util.getPlayerIndexFromName(name)
-    for k,v in pairs(game.players) do
+    for k, v in pairs(game.players) do
         if v.name == name then return k end
     end
-    Commands.player.print("Player '"..name.."' not found. Make sure that the name is typed correctly(case sensitive)")
+    Commands.player.print("Player '" .. name .. "' not found. Make sure that the name is typed correctly(case sensitive)")
     return nil
 end
 
@@ -408,9 +450,9 @@ function Commands.util.join(t, glue)
     local string = ""
     for _, v in pairs(t) do
         if string ~= "" then
-            string = string..glue..v
+            string = string .. glue .. v
         else
-            string = string..v
+            string = string .. v
         end
     end
     return string
@@ -426,25 +468,25 @@ function Commands.util.lockDependingTechs(tech)
             Commands.util.lockDependingTechs(t)
         end
     end
-    tech.researched=false
+    tech.researched = false
     Commands.player.force.set_saved_technology_progress(tech, 0)
 end
 
 -- Check the teleport target location for collisions
 function Commands.util.makeValidTeleportLocation(position)
-    if Commands.player.surface.can_place_entity({name="player", position=position}) then
+    if Commands.player.surface.can_place_entity({ name = "player", position = position }) then
         return position
     else
-        if Commands.player.surface.can_place_entity({name="player", position={position.x-1, position.y}}) then
-            return {position.x-2, position.y} -- left side of position
-        elseif Commands.player.surface.can_place_entity({name="player", position={position.x+1, position.y}}) then
-            return {position.x+1, position.y} -- above position
-        elseif Commands.player.surface.can_place_entity({name="player", position={position.x-1, position.y+1}}) then
-            return {position.x-1, position.y+1} -- above position
-        elseif Commands.player.surface.can_place_entity({name="player", position={position.x-1, position.y-1}}) then
-            return {position.x-1, position.y-1} -- below position
+        if Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y } }) then
+            return { position.x - 2, position.y } -- left side of position
+        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x + 1, position.y } }) then
+            return { position.x + 1, position.y } -- above position
+        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y + 1 } }) then
+            return { position.x - 1, position.y + 1 } -- above position
+        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y - 1 } }) then
+            return { position.x - 1, position.y - 1 } -- below position
         else
-            return {position.x, position.y} -- same space as position
+            return { position.x, position.y } -- same space as position
         end
     end
 end
@@ -453,10 +495,10 @@ end
 function Commands.util.switchBool(value, message)
     if value == true then
         value = false
-        if message~=nil then Commands.player.print(message.." off") end
+        if message ~= nil then Commands.player.print(message .. " off") end
     else
         value = true
-        if message~=nil then Commands.player.print(message.." on") end
+        if message ~= nil then Commands.player.print(message .. " on") end
     end
     return value
 end
@@ -466,14 +508,15 @@ function Commands.util.unlockDependingTechs(tech)
     for _, t in pairs(tech.prerequisites) do
         Commands.util.unlockDependingTechs(t)
     end
-    tech.researched=true
+    tech.researched = true
 end
 
+-- Transfer all items from one inventory to the other
 function Commands.util.transferInventory(origin, destination, inventory)
     if origin.get_inventory(inventory) == nil then return end
-    for i,v in pairs(origin.get_inventory(inventory).get_contents()) do
-        destination.insert({name=i, count=v})
-        origin.remove_item({name=i, count=v})
+    for i, v in pairs(origin.get_inventory(inventory).get_contents()) do
+        destination.insert({ name = i, count = v })
+        origin.remove_item({ name = i, count = v })
     end
 end
 
