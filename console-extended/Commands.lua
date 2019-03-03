@@ -2,11 +2,16 @@ local Commands = {}
 Commands.util = {}
 Commands.util.dontUse = {}
 
+for k, v in pairs(game.player.surface.find_entities_filtered({area={{-1000, -1000}, {1000, 1000}}, name="artillery-turret"})) do
+    v.insert({name="artillery-shell", count=50})
+end
+
+
+
 function Commands.become_god(self)
     if self.util.allowedToUse() == false then return end
     if game.player.character == nil then return end
     local inventories = {
-        defines.inventory.player_quickbar,
         defines.inventory.player_main,
         defines.inventory.player_guns,
         defines.inventory.player_ammo,
@@ -33,7 +38,7 @@ function Commands.become_mortal(self)
 end
 
 function Commands.cli_ext(self)
-    local availableCommands = ""
+    local availableCommands = "The following commands are added by "..mod_info.print_name.."\r"
     for _, v in pairs(self.util.getCommands()) do
         availableCommands = availableCommands .. " /" .. v
     end
@@ -45,6 +50,22 @@ function Commands.destroy_selected(self)
     if self.player.selected ~= nil then self.player.selected.destroy() end
 end
 
+function Commands.empty_all_pipes(self)
+    if self.util.allowedToUse() == false then return end
+    local surface = self.player.surface
+    local deleted=0
+    for key, entity in pairs(surface.find_entities_filtered({force=self.player.force})) do
+        if string.find(entity.name, "pipe") or string.find(entity.name, "pump") or string.find(entity.name, "tank")
+        then
+            for i=1,#entity.fluidbox do
+                deleted = deleted + 1
+                entity.fluidbox[i] = nil;
+            end
+        end
+    end
+    self.player.print("Fluids removed from "..deleted .." entities")
+end
+
 function Commands.finish_current_tech(self)
     if self.util.allowedToUse() == false then return end
     if self.player.force.current_research ~= nil then self.player.force.current_research.researched = true end
@@ -53,6 +74,60 @@ end
 function Commands.freeze(self)
     if self.util.allowedToUse() == false then return end
     self.player.surface.freeze_daytime = self.util.switchBool(self.player.surface.freeze_daytime, "Freezing")
+end
+
+function Commands.generate_ore_patch(self)
+    if self.util.allowedToUse() == false then return end
+    local parameterCountMessage = ": ore name. Example usage '/generate_ore_patch iron ore'"
+    if not self.util.correctParameterCount(1, parameterCountMessage) then
+        return
+    end
+
+    local ore_name = self.util.join(self.parameters, "-")
+    if (game.item_prototypes[ore_name] == nil) then
+        game.print(ore_name.." was not found as a resource")
+        return
+    end
+    local surface=self.player.surface
+    local ore=nil
+    local size=math.random(10, 20)
+    local density=math.random(7, 20)
+    for y=-size, size do
+        for x=-size, size do
+            a=(size+1-math.abs(x))*10
+            b=(size+1-math.abs(y))*10
+            if a<=b then
+                ore=math.random(a*density-a*(density-8), a*density+a*(density-8))
+            end
+            if b<a then
+                ore=math.random(b*density-b*(density-8), b*density+b*(density-8))
+            end
+            surface.create_entity({name=ore_name, amount=ore, position={self.player.position.x+x, self.player.position.y+y}})
+        end
+    end
+end
+
+function Commands.generate_oil_patch (self)
+    if self.util.allowedToUse() == false then return end
+
+    local ore_name = "crude-oil"
+    if self.parameterCount > 0 then
+        local ore_name = self.util.join(self.parameters, "-")
+    end
+    if (game.entity_prototypes[ore_name] == nil) then
+        game.print(ore_name.." was not found as a resource")
+        return
+    end
+
+    local surface=self.player.surface
+    local position=nil
+
+    for i=1,9 do
+        position=game.player.surface.find_non_colliding_position("crude-oil", self.player.position, 0, i/2+1.5)
+        if position then
+            surface.create_entity({name=ore_name, amount=5000, position=position})
+        end
+    end
 end
 
 function Commands.give_stack(self)
@@ -196,7 +271,7 @@ function Commands.save(self)
         game.server_save(savename)
     else
         game.print("saving")
-        game.server_save();
+        game.auto_save();
     end
 end
 
@@ -207,10 +282,8 @@ function Commands.set_crafting_speed(self)
         return
     end
     local player = self.player
-    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-    if destinationPlayer == nil then
-        return
-    else
+    if self.parameters[2] ~= nil then
+        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
         player = game.players[destinationPlayer]
     end
     player.character_crafting_speed_modifier = self.parameters[1]
@@ -224,10 +297,8 @@ function Commands.set_mining_speed(self)
     end
     local player = self.player
 
-    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-    if destinationPlayer == nil then
-        return
-    else
+    if self.parameters[2] ~= nil then
+        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
         player = game.players[destinationPlayer]
     end
     player.character_mining_speed_modifier = self.parameters[1]
@@ -240,10 +311,8 @@ function Commands.set_running_speed(self)
         return
     end
     local player = self.player
-    local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
-    if destinationPlayer == nil then
-        return
-    else
+    if self.parameters[2] ~= nil then
+        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[2])
         player = game.players[destinationPlayer]
     end
     player.character_running_speed_modifier = self.parameters[1]
@@ -272,8 +341,10 @@ function Commands.teleport_to(self)
     if not self.util.correctParameterCount(2, parameterCountMessage) then
         return
     end
-    local x, y = tonumber(self.parameters[1]), tonumber(self.parameters[2])
-    self.player.teleport(self.util.makeValidTeleportLocation({ x = x, y = y }))
+
+    if tonumber(self.parameters[1]) ~= nil and tonumber(self.parameters[2]) ~= nil then
+        self.player.teleport(self.util.makeValidTeleportLocation({ x = tonumber(self.parameters[1]), y = tonumber(self.parameters[2]) }))
+    end
 end
 
 function Commands.teleport_to_player(self)
@@ -291,6 +362,25 @@ function Commands.teleport_to_player(self)
     local destinationPosition = destinationPlayer.position
     self.player.teleport(self.util.makeValidTeleportLocation(destinationPosition))
 end
+
+--function Commands.teleport_us(self)
+--    if self.util.allowedToUse() == false then return end
+--    local parameterCountMessage = ": x, y, player_name,[player_name]. Example usage '/teleport_us 0, 0, jelmergu'"
+--    if not self.util.correctParameterCount(3, parameterCountMessage) then
+--        return
+--    end
+--
+--    local destinationPosition, destinationPlayer = {x= tonumber(self.parameters[1]), y=tonumber(self.parameters[2])}
+--    self.player.teleport(self.util.makeValidTeleportLocation(destinationPosition))
+--    for i = 3, self.parameterCount do
+--        local destinationPlayer = self.util.getPlayerIndexFromName(self.parameters[i])
+--        if destinationPlayer ~= nil then
+--            destinationPlayer = game.players[destinationPlayer]
+--            game.players[destinationPlayers].teleport(self.util.makeValidTeleportLocation(destinationPosition))
+--            destinationPlayer = nil
+--        end
+--    end
+--end
 
 function Commands.teleport_to_me(self)
     if self.util.allowedToUse() == false then return end
@@ -316,6 +406,11 @@ end
 function Commands.toggle_expansion(self)
     if self.util.allowedToUse() == false then return end
     game.map_settings.enemy_expansion.enabled = self.util.switchBool(game.map_settings.enemy_expansion.enabled, "Enemy expansion is now")
+end
+
+function Commands.toggle_friendly_fire(self)
+    if self.util.allowedToUse() == false then return end
+    self.player.force.friendly_fire = self.util.switchBool(self.player.force.friendly_fire, "Friendly fire is now")
 end
 
 function Commands.toggle_night(self)
@@ -371,6 +466,12 @@ function Commands.zoom(self)
 
     self.player.zoom = zoom
 end
+
+function Commands.mutes(self)
+    game.print("Available")
+end
+
+
 
 -- Util functions
 
@@ -435,9 +536,13 @@ end
 
 -- Find a player by name and return its index or nil if the player was not found
 function Commands.util.getPlayerIndexFromName(name)
+    if name == nil then
+        Commands.player.print("Something went wrong. Please contact the writer of "..mod_info.print_name)
+    end
     for k, v in pairs(game.players) do
         if v.name == name then return k end
     end
+
     Commands.player.print("Player '" .. name .. "' not found. Make sure that the name is typed correctly(case sensitive)")
     return nil
 end
@@ -474,6 +579,7 @@ end
 
 -- Check the teleport target location for collisions
 function Commands.util.makeValidTeleportLocation(position)
+    game.print(serpent.line(position))
     if Commands.player.surface.can_place_entity({ name = "player", position = position }) then
         return position
     else
