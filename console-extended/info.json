@@ -1,10 +1,10 @@
 {
     "name": "console-extended",
-    "version": "0.17.1",
+    "version": "0.18.0",
     "title": "Console Extended",
     "author": "Jelmergu",
     "homepage": "https://github.com/Jelmergu/factorio-console-extended",
-    "factorio_version": "0.17",
+    "factorio_version": "0.18",
     "dependencies": ["base >= 0.16.7"],
     "description": "This mod adds some console commands that can be useful."
 }

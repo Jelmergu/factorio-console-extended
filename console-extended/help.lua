@@ -1,4 +1,5 @@
-local helpTexts = {
+help = {}
+help.helpTexts = {
     become_god = "This command removes the players character, making the player 'god'. Requires you to be admin if adminsOnly is true",
     become_mortal = "This command puts the player in a character, making the player 'mortal'. Useful if destroy_selected was used on a player character on accident",
     cli_ext = "This command shows all commands added by this mod",
@@ -36,9 +37,12 @@ local helpTexts = {
     zoom = "This command changes the zoom level. Needs the percentage of the wanted zoom (100 is normal speed, 50 is half speed, 200 is double). Has a range from 4 to 1.000",
 }
 
-return function(command)
-    if helpTexts[command] ~= nil then
-        return helpTexts[command]
+function help.getHelp(command)
+    log(command)
+    if help.helpTexts[command] ~= nil then
+        return help.helpTexts[command]
     end
     return "Does exactly what it says on the tin, hopefully (no help text has been specified for this command yet)"
 end
+
+return help

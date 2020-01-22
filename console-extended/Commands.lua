@@ -2,23 +2,17 @@ local Commands = {}
 Commands.util = {}
 Commands.util.dontUse = {}
 
-for k, v in pairs(game.player.surface.find_entities_filtered({area={{-1000, -1000}, {1000, 1000}}, name="artillery-turret"})) do
-    v.insert({name="artillery-shell", count=50})
-end
-
-
-
 function Commands.become_god(self)
     if self.util.allowedToUse() == false then return end
     if game.player.character == nil then return end
     local inventories = {
-        defines.inventory.player_main,
-        defines.inventory.player_guns,
-        defines.inventory.player_ammo,
-        defines.inventory.player_armor,
-        defines.inventory.player_tools,
-        defines.inventory.player_vehicle,
-        defines.inventory.player_trash
+        defines.inventory.character_main,
+        defines.inventory.character_guns,
+        defines.inventory.character_ammo,
+        defines.inventory.character_armor,
+        defines.inventory.character_tools,
+        defines.inventory.character_vehicle,
+        defines.inventory.character_trash
     }
     local playerCharacter = game.player.character
 
@@ -467,12 +461,6 @@ function Commands.zoom(self)
     self.player.zoom = zoom
 end
 
-function Commands.mutes(self)
-    game.print("Available")
-end
-
-
-
 -- Util functions
 
 -- Check if allowed to use a command
@@ -486,7 +474,7 @@ end
 
 -- The entry point of every command.
 function Commands.util.command(event)
-    Commands.player = game.players[event.player_index]
+    Commands.player = game.get_player(event.player_index)
     Commands.parameters = Commands.util.explode(event.parameter, " ")
     Commands.parameterCount = 0
     Commands.admin = Commands.player.admin
@@ -579,17 +567,16 @@ end
 
 -- Check the teleport target location for collisions
 function Commands.util.makeValidTeleportLocation(position)
-    game.print(serpent.line(position))
-    if Commands.player.surface.can_place_entity({ name = "player", position = position }) then
+    if Commands.player.surface.can_place_entity({ name = "character", position = position }) then
         return position
     else
-        if Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y } }) then
+        if Commands.player.surface.can_place_entity({ name = "character", position = { position.x - 1, position.y } }) then
             return { position.x - 2, position.y } -- left side of position
-        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x + 1, position.y } }) then
+        elseif Commands.player.surface.can_place_entity({ name = "character", position = { position.x + 1, position.y } }) then
             return { position.x + 1, position.y } -- above position
-        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y + 1 } }) then
+        elseif Commands.player.surface.can_place_entity({ name = "character", position = { position.x - 1, position.y + 1 } }) then
             return { position.x - 1, position.y + 1 } -- above position
-        elseif Commands.player.surface.can_place_entity({ name = "player", position = { position.x - 1, position.y - 1 } }) then
+        elseif Commands.player.surface.can_place_entity({ name = "character", position = { position.x - 1, position.y - 1 } }) then
             return { position.x - 1, position.y - 1 } -- below position
         else
             return { position.x, position.y } -- same space as position
