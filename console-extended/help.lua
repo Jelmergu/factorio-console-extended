@@ -38,7 +38,7 @@ help.helpTexts = {
 }
 
 function help.getHelp(command)
-    log(command)
+    --log(command)
     if help.helpTexts[command] ~= nil then
         return help.helpTexts[command]
     end
